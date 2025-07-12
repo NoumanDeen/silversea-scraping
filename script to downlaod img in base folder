@@ -1,0 +1,30 @@
+$basePath = "D:\Silver Sea\Silver Nova"  // destination of folder 
+New-Item -ItemType Directory -Path $basePath -Force | Out-Null
+
+$suites = @(
+    @{
+        Name = "Otium Suite" // folder you want to make in base folder 
+        Images = @(
+            "https://cdn.sanity.io/images/rd0y3pad/production/3f532e6992f4e59b6c24de0c97c63e26716c3839-6000x3272.jpg", // image url 
+        )
+    },					
+) 
+foreach ($suite in $suites) {
+    $suiteName = $suite.Name
+    $folderPath = Join-Path $basePath $suiteName
+    New-Item -ItemType Directory -Path $folderPath -Force | Out-Null
+
+    $index = 1
+    foreach ($imageUrl in $suite.Images) {
+        if (![string]::IsNullOrWhiteSpace($imageUrl)) {
+            $extension = [System.IO.Path]::GetExtension($imageUrl.Split('?')[0])
+            $safeSuiteName = $suiteName -replace '[^a-zA-Z0-9]', '_'
+            $fileName = "{0}_{1}{2}" -f $safeSuiteName, $index, $extension
+            $filePath = Join-Path $folderPath $fileName
+            Invoke-WebRequest -Uri $imageUrl -OutFile $filePath
+            $index++
+        }
+    }
+}
+
+Write-Host "✅ All Silver Nova suite images downloaded to $basePath"
